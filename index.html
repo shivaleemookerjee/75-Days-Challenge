@@ -1,31 +1,178 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Glow-Up</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glow-Up App</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles.css">
 
-<script type="module" src="app.js"></script>
+<style>
+body {
+  margin:0;
+  font-family:'Poppins',sans-serif;
+  background: linear-gradient(135deg,#ffd6e7,#e6dcff);
+  color:#4a3b57;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:15px;
+}
+
+h1{text-align:center;}
+
+.glass{
+  background:rgba(255,255,255,0.6);
+  backdrop-filter: blur(12px);
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
+.stats{
+  display:flex;
+  justify-content:space-around;
+}
+
+.progress{
+  height:12px;
+  background:#eee;
+  border-radius:20px;
+}
+
+.bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(to right,#ff8fc1,#bba6ff);
+}
+
+.days{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:8px;
+}
+
+.day{
+  background:white;
+  padding:8px;
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.day.done{background:#dff6e4;}
+
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  background:#ff8fc1;
+  color:white;
+  margin-top:10px;
+}
+</style>
 </head>
 
 <body>
+<div class="container">
 
-<h1>✨ Glow-Up App ✨</h1>
+<h1>✨ Glow-Up Tracker ✨</h1>
 
-<button id="login">Login with Google</button>
-<button id="logout">Logout</button>
+<div class="glass">
+  <div class="stats">
+    <div>Done: <span id="done">0</span></div>
+    <div>Streak: <span id="streak">0</span></div>
+    <div>%: <span id="percent">0</span></div>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+</div>
 
-<div id="user"></div>
+<div class="glass">
+<button onclick="notify()">Enable Reminder 🔔</button>
+<button onclick="resetData()">Reset Progress</button>
+</div>
 
-<h3>Progress</h3>
-<div id="progress"></div>
+<div class="glass">
+<div class="days" id="days"></div>
+</div>
 
-<h3>Checklist</h3>
-<div id="days"></div>
+</div>
 
-<button id="notify">Enable Notifications 🔔</button>
+<script>
+const start = new Date('2026-04-20');
+const total = 75;
+
+let data = JSON.parse(localStorage.getItem("glow")||"{}");
+
+function render(){
+  let done=0;
+  let streak=0;
+
+  const container=document.getElementById("days");
+  container.innerHTML="";
+
+  for(let i=0;i<total;i++){
+    const key="d"+i;
+
+    const div=document.createElement("div");
+    div.className="day"+(data[key]?" done":"");
+    div.innerText=i+1;
+
+    div.onclick=()=>{
+      data[key]=!data[key];
+      save();
+    }
+
+    if(data[key]) done++;
+    container.appendChild(div);
+  }
+
+  // streak logic
+  for(let i=0;i<total;i++){
+    if(data["d"+i]) streak++;
+    else streak=0;
+  }
+
+  document.getElementById("done").innerText=done;
+  document.getElementById("percent").innerText=Math.round(done/total*100);
+  document.getElementById("bar").style.width=(done/total*100)+"%";
+  document.getElementById("streak").innerText=streak;
+}
+
+function save(){
+  localStorage.setItem("glow",JSON.stringify(data));
+  render();
+}
+
+// 🔔 simple notification
+function notify(){
+  Notification.requestPermission().then(permission=>{
+    if(permission==="granted"){
+      new Notification("Glow-Up Reminder 💖",{
+        body:"Don’t break your streak today ✨"
+      });
+    }
+  });
+}
+
+function resetData(){
+  if(confirm("Reset all progress?")){
+    localStorage.removeItem("glow");
+    data={};
+    render();
+  }
+}
+
+// service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js');
+}
+
+render();
+</script>
 
 </body>
 </html>
