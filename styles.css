@@ -1,0 +1,26 @@
+body{
+  font-family:Poppins;
+  background:linear-gradient(135deg,#ffd6e7,#e6dcff);
+  text-align:center;
+}
+
+.day{
+  display:inline-block;
+  margin:5px;
+  padding:10px;
+  background:white;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.done{
+  background:#dff6e4;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  background:#ff8fc1;
+  color:white;
+}
